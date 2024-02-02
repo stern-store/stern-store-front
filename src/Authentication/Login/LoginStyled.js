@@ -1,32 +1,6 @@
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
 
-export default function Login(){
-    const navigate=useNavigate();
-    let validation;
-    // validation=<h2>usuário não autorizado</h2>;
-    return(
-    <DivLogin>
-        <DivCoustumer> <h6>Stern Store</h6></DivCoustumer>
-            <h4>Stern</h4>
-            <h5>Store</h5>
-            <img src="../Logo/bolsa3-removebg-preview.png"/>
-        <FormLogin>
-            <p>Entrar</p>
-            <InputEmail placeholder="email"></InputEmail>
-            <InputPassword placeholder="password"></InputPassword>
-            <ButtonEnter onClick={()=>{navigate("/")}}>Entrar <ion-icon name="arrow-redo"></ion-icon></ButtonEnter>
-            
-            <DivLinks>
-                <h1 onClick={()=>{navigate("/security")}}>Esqueci minha senha</h1>
-                <h3 onClick={()=>{navigate("/register")}} >Cadastre-se</h3>
-            </DivLinks>
-            {validation} 
-        </FormLogin>
-        
-    </DivLogin>);
-};
-const DivCoustumer=styled.div`
+export const DivCoustumer=styled.div`
     width: 100%;
     height: 300px;
     background: #11A8B1;
@@ -38,7 +12,7 @@ const DivCoustumer=styled.div`
     justify-content: center;
 `
 
-const DivLogin=styled.div`
+export const DivLogin=styled.div`
     height:100vh;
     background: #ffffff;
     display: flex;
@@ -83,7 +57,7 @@ const DivLogin=styled.div`
         margin-bottom: 30px;
     }
 `
-const FormLogin=styled.form`
+export const FormLogin=styled.form`
     width: 450px;
     height: 450px;
     display: flex;
@@ -120,7 +94,7 @@ const FormLogin=styled.form`
         
     }
 `;
-const InputEmail=styled.input`
+export const InputEmail=styled.input`
     font-size: 17px;
     width: 80%;
     height: 50px;
@@ -134,8 +108,8 @@ const InputEmail=styled.input`
         color: #737373;
     }
 `;
-const InputPassword=InputEmail;
-const ButtonEnter=styled.button`
+export const InputPassword=InputEmail;
+export const ButtonEnter=styled.button`
     width: 80%;
     height: 50px;
     margin-top: 30px;
@@ -154,7 +128,7 @@ const ButtonEnter=styled.button`
         margin-left: 15px;
     }
 `;
-const DivLinks=styled.div`
+export const DivLinks=styled.div`
     width: 100%;    
     display: flex;
     justify-content: space-between;

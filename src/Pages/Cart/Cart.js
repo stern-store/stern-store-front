@@ -1,12 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { BsChevronDown, BsTrashFill } from 'react-icons/bs';
+
 const arr=[1,2,3,4,5,6,7,8,9,10];
 const quantidade=3;
 
 function localization(){
     alert("Põe a localização ae pra nós");
 }
-
 
 export default function Cart(){
     const navigate=useNavigate();
@@ -34,7 +35,7 @@ export default function Cart(){
                 {arr.map((e)=>(
                 <DivBox>
                     <DivSubBox>
-                        <img src="./Logo/lampada.jpeg"/>
+                        <img src="./Logo/lampada.jpeg" onClick={() => {navigate("/details")}}/>
                         <DivBoxInfo>
                             <DivBoxInfoTop>
                             <h1>nome do produto</h1>
@@ -44,10 +45,10 @@ export default function Cart(){
                                 <DivAmount>
                                     <h3>Qtd:</h3> 
                                     <h4> {quantidade} </h4>
-                                    <ion-icon name="chevron-down"></ion-icon>
+                                    <BsChevronDown/>
                                 </DivAmount>
                                 <div className="iconTrash">
-                                    <ion-icon name="trash-bin"></ion-icon>
+                                    <BsTrashFill style={trash}/>
                                 </div>
                             </div>
                         </DivBoxInfo>
@@ -58,7 +59,6 @@ export default function Cart(){
                             <h2>R$ 20,00</h2>
                             <DivCheckBox>
                                 <input id="c1" type="checkbox"/>
-                                {/* <label for="c1">Check 1</label> */}
                             </DivCheckBox>
                         </DivSubTotal>
                     </DivBoxDecision>
@@ -76,6 +76,10 @@ export default function Cart(){
 
     </DivCart>)
 };
+const trash = {
+    color: "#FFFFFF",
+    fontSize: "20px"
+}
 const DivCart=styled.div``
 const DivTopCart=styled.div`
     width:100%;
@@ -126,7 +130,7 @@ const DivSpace=styled.div`
 const DivContainer=styled.div`
     margin-top: 100px;
     whidt: 100%;
-    height: 100%; // ajeitaaaaaaaaaaaaaaaaaaaaarrrrrrrrrrr
+    height: 100%;
     display: flex;
 `;
 const DivProducts=styled.div`
@@ -150,6 +154,7 @@ const DivBox=styled.div`
         width: 240px;
         height: 170px;
         border-radius: 10px 0 10px 0;
+        cursor:pointer;
     }
 `;
 const DivSubBox=styled.div`
