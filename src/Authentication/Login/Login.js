@@ -29,6 +29,7 @@ export default function Login(){
                 localStorage.setItem("token",response.data.token);
                 localStorage.setItem("userId", response.data.userId);
                 navigate("/");
+                window.location.reload();
             })
             .catch((error)=>{
                 console.log(error);
@@ -53,6 +54,7 @@ export default function Login(){
                 <h3 onClick={()=>{navigate("/register")}} >Cadastre-se</h3>
             </DivLinks>
             <h2>{validation}</h2>
+            <h3 onClick={()=>{navigate("/")}}>Entrar sem Login</h3>
         </FormLogin>
         
     </DivLogin>);

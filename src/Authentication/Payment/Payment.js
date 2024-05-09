@@ -39,10 +39,10 @@ export default function Payment(){
                 <p>CARTÃO DE CRÉDITO</p>
                 <FormCardData>
                     <InputCardData placeholder="nome do titular do cartão" type="text" required/>
-                    <InputCardData placeholder="número do cartão" type="number" required/>
+                    <InputCardData placeholder="número do cartão" type="text" required/>
                     <DivInputs>
-                        <InputCardDataDate placeholder="dd/mm" type="number" required/>
-                        <InputCardDataCVV placeholder="CVV" type="number" required/>
+                        <InputCardDataDate placeholder="dd/mm" type="text" required/>
+                        <InputCardDataCVV placeholder="CVV" type="text" required/>
                         <DivButtonSelected> <h4>2x de 233,99</h4><ion-icon name="chevron-down-outline"></ion-icon></DivButtonSelected>
                     </DivInputs>
                     

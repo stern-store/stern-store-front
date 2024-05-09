@@ -1,21 +1,74 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { BsChevronDown, BsTrashFill } from 'react-icons/bs';
-
-const arr=[1,2,3,4,5,6,7,8,9,10];
-const quantidade=3;
+import { deleteItem, getCartDetails } from "../Servives/api";
+import { useContext, useEffect, useState } from "react";
+import { Price } from "../Servives/functions";
+import { AuthContext } from "../Servives/Auth";
+import { Alert } from "../Components/Alert";
 
 function localization(){
-    alert("Põe a localização ae pra nós");
+    alert("maintenance");
 }
 
 export default function Cart(){
     const navigate=useNavigate();
-    function confirm(){
-        navigate("/payment");
+    const [cartUser, setCartUser] = useState ([]);
+    const [checkBox, setCheckBox] = useState([]);
+    const [total, setTotal] = useState(0);
+    const [priceTotal, setPriceTotal] = useState(0);
+    const {clickAlert, setClickAlert} = useContext(AuthContext);
+    const {messageAlert, setMessageAlert} = useContext(AuthContext);
+
+    useEffect(()=> {
+        getCartDetails().then((res)=>{
+            setCartUser(res.data);
+        }).catch((error)=>{
+            console.log(error);
+        })
+    }, []);
+
+    function selectedItem(cartId, price) {
+        const itemIndex = checkBox.findIndex(item => item === cartId);
+        if (itemIndex === -1) {
+            setTotal(total+price);
+            setCheckBox([...checkBox, cartId]);
+        } else {
+            const updatedCheckBox = [...checkBox];
+            updatedCheckBox.splice(itemIndex, 1);
+            setCheckBox(updatedCheckBox);
+            setTotal(total-price);
+        }
     }
+
+    function deleteItemCart(cartId) {
+        deleteItem(cartId).then((res)=>{
+            window.location.reload();
+        }).catch((error)=> {
+            console.log(error);
+        })
+    }
+
+    function confirm(){
+        if(checkBox.length!=0){
+            navigate("/payment");
+        }else{
+            setMessageAlert("No items selected");
+            setClickAlert(true)
+        }
+    }
+    
+    useEffect(()=>{
+        if(total>0){
+            setPriceTotal(Price(String(total)));
+        }else{
+            setPriceTotal(0);
+        }
+    }, [total]);
+
     return(
     <DivCart>
+        <Alert/>
         <DivTopCart>
                 <DivSpace>
                     <ion-icon onClick={()=>{navigate("/")}} name="arrow-back-outline"></ion-icon>
@@ -24,6 +77,7 @@ export default function Cart(){
                 <DivSpace>
                     <h2>Seu carrinho</h2> 
                     <ion-icon onClick={()=>{window.location.reload()}} name="cart-outline"></ion-icon>
+                    <DivCircle><h5>{cartUser.length}</h5></DivCircle>
                 </DivSpace>    
                 <DivSpace>
                     <h3>Endereço</h3>
@@ -32,43 +86,32 @@ export default function Cart(){
         </DivTopCart>
         <DivContainer>
             <DivProducts>
-                {arr.map((e)=>(
-                <DivBox>
+                {cartUser.map((element,key)=>(
+                <DivBox key={key}>
+
                     <DivSubBox>
-                        <img src="./Logo/lampada.jpeg" onClick={() => {navigate("/details")}}/>
+                        <img src={element.image} onClick={() => {navigate("/details")}}/>
                         <DivBoxInfo>
-                            <DivBoxInfoTop>
-                            <h1>nome do produto</h1>
-                            <h2>preço</h2>
-                            </DivBoxInfoTop>
-                            <div className="amount">
-                                <DivAmount>
-                                    <h3>Qtd:</h3> 
-                                    <h4> {quantidade} </h4>
-                                    <BsChevronDown/>
-                                </DivAmount>
-                                <div className="iconTrash">
-                                    <BsTrashFill style={trash}/>
-                                </div>
-                            </div>
+                            <h1>{element.title}</h1>
+                            <h2>R$ {Price(element.price)}</h2>       
                         </DivBoxInfo>
                     </DivSubBox>
+
                     <DivBoxDecision>
-                        <h1>SubTotal</h1>
-                        <DivSubTotal>
-                            <h2>R$ 20,00</h2>
-                            <DivCheckBox>
-                                <input id="c1" type="checkbox"/>
-                            </DivCheckBox>
-                        </DivSubTotal>
+                        <DivCheckBox >
+                            <input id="c1" type="checkbox" onClick={()=>{ selectedItem(element.cartId,Number(element.price))}}/>
+                        </DivCheckBox>
+                        <BsTrashFill style={trash} onClick={()=>{deleteItemCart(element.cartId)}}/>
                     </DivBoxDecision>
+
                 </DivBox>))}
+
             </DivProducts>
             <DivConfirm>
-                    <h1>5 itens</h1>
+                    <h1>{checkBox.length} itens</h1>
                     <DivTotal>
                         <h2>Total:</h2>
-                        <h3>R$ 129,90</h3>
+                        <h3>R$ {priceTotal}</h3>
                     </DivTotal>
                     <ButtonConfirm onClick={()=>{confirm()}}><h4>Confirmar Pedido</h4></ButtonConfirm>
             </DivConfirm>
@@ -78,7 +121,9 @@ export default function Cart(){
 };
 const trash = {
     color: "#FFFFFF",
-    fontSize: "20px"
+    fontSize: "20px",
+    margin: "0 0 0 10px",
+    cursor: "pointer"
 }
 const DivCart=styled.div``
 const DivTopCart=styled.div`
@@ -150,6 +195,7 @@ const DivBox=styled.div`
     justify-content: space-between;
     padding: 13px;
     box-shadow: 10px 5px 5px teal;   
+    
     img{
         width: 240px;
         height: 170px;
@@ -165,6 +211,7 @@ const DivBoxInfo=styled.div`
     flex-direction: column;
     justify-content: space-between;
     margin-left:20px;
+    
     h1{
         font-family: 'Recursive', sans-serif;
         font-weight: 700;
@@ -174,47 +221,15 @@ const DivBoxInfo=styled.div`
     }
     h2{
         font-family: 'Recursive', sans-serif;
-        font-weight: 500;
+        font-weight: 600;
         font-size: 20px;
         margin-top: 10px;
         text-shadow: 1px 1px 2px teal;
-        color: white;
+        color: #ffffff;
     }
-    .amount{
-        width: 130px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin: 20px 0;
-    }
-    .amount .iconTrash ion-icon{
-        color: white;
-        font-size: 20px;
-        cursor: pointer;
-    }
-`;
-const DivBoxInfoTop=styled.div``
-const DivAmount=styled.div`
-    width: 80px;
-    height: 40px;
-    background: #eaeaea;
-    box-shadow: 0px 5px 5px teal; 
-    border-radius: 12px;
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-    font-family: 'Recursive', sans-serif;
-    cursor: pointer;
-    h4{
-        font-weight: 600;
-    }
-    ion-icon{
-        font-size: 20px;
-    }
-    
 `;
 const DivBoxDecision=styled.div`
-    width: 250px;
+    width: 70px;
     height:100%;
     padding: 16px;
     display: flex;
@@ -222,22 +237,6 @@ const DivBoxDecision=styled.div`
     justify-content: space-between;
     font-family: 'Recursive', sans-serif;
     color: white;   
-    h1{
-        border-bottom: 2px solid #eaeaea;
-        margin-bottom: 10px;
-        padding-bottom: 10px;
-        font-size: 15px;
-    }
-    h2{
-        font-weight: 600;
-        font-size: 20px;
-        text-shadow: black 1px 0 10px;
-    }
-`;
-const DivSubTotal=styled.div`
-    display: flex;
-    align-items: center;
-    justify-content:space-between;
 `;
 
 const DivCheckBox=styled.div`
@@ -313,4 +312,23 @@ const ButtonConfirm=styled.button`
 const DivTotal=styled.div`
     display: flex;
     margin: 20px 0;
+`;
+
+const DivCircle=styled.div`
+    width: 17px;
+    height: 17px;
+    background: #bf0a0d;
+    border-radius: 100%;
+    position: absolute;
+    margin: 0 0 20px 230px;
+    display: flex;
+    justify-content: center;
+    align-items:center; 
+
+    h5{
+        color: #ffffff;
+        font-size: 12px;
+        font-family: 'Righteous', cursive;
+    }
+
 `;

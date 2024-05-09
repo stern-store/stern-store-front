@@ -1,41 +1,26 @@
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getAllProducts } from "../Servives/api";
+import { Price } from "../Servives/functions";
 
-const text = `
-Descrição
-Controle Compativel com PS3 Playstation 3 Dual Shock Wirelless Sem Fio !
+export function ProductDetails({item}) {
+    const navigate = useNavigate();
+    const [allProducts, setAllProducts] = useState ([]);
 
-PRODUTO NOVO / NA EMBALAGEM INDIVIDUALIZADA
-CABO USB DENTRO DA EMBALAGEM COM CONTROLE PEÇO QUE VERIFIQUE QUANDO COMPRAR
+    useEffect(()=> {
+        getAllProducts().then((res)=>{
+            setAllProducts(res.data);
+        }).catch((error)=>{
+            console.log(error);
+        });       
+    }, []);
+    function otherProduct(producId){
+        localStorage.setItem("productId",producId);
+        navigate("/details");
+        window.location.reload();   
+    }
 
-2 Controle Ps3 Doubleshock P3 S/fio + 2 Cabo Carregador
-Marca: Doubleshock P3
-Modelo: Compatível Ps3 Todos os modelos
-
-Produzido com alta tecnologia, utiliza o recurso dual shock,
-máxima vibração em seus jogos tornando-os muito mais reais!
-Permite uma conexão segura sem atrasos!
-Bateria recarregável, carrega enquanto joga!
-
-* ENVIAMOS CABO USB CARREGADOR DE BRINDE *
-
-CARACTERÍSTICAS
-- Wireless
-- Compatível com Playstation 3
-- Função de Vibração (dualshock)
-- Possui 12 botões e 2 alavancas analógicas
-- Botão de liga (P3) - Desliga automaticamente sem uso
-- Bateria recarregável (cabo usb carregador de brinde)
-*O cabo de brinde tem 1 metro *
-`
-const linkImg = "https://media.istockphoto.com/id/1225329047/pt/foto/green-screen-for-cybersport-game.jpg?s=170667a&w=0&k=20&c=qBMnYvewrhaeCjOKKLF5z8zkistzrNNPB2vR3sqECZg="
-
-const arr= [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
-
-
-
-export function ProductDetails() {
-    const navigate = useNavigate()
     return(
         <DivProductDetails>
             <DivFeatures>
@@ -43,18 +28,18 @@ export function ProductDetails() {
                 <DivProductFeatures>
                     <DivColor>
                         <h2>cor:</h2>
-                        <div></div>
+                        <div style={{background:item.color}}></div>
                     </DivColor>
                         
                     
                     <DivOthers>
                         <h2>dimensões:</h2>
-                        <h3> 20cm x 30cm</h3>
+                        <h3> {item.dimentions} </h3>
                     </DivOthers>
                     
                     <DivOthers>
                         <h2>peso:</h2>
-                        <h3>não se aplica</h3>
+                        <h3>{item.weight}</h3>
                     </DivOthers>
                     
                 </DivProductFeatures>
@@ -63,23 +48,23 @@ export function ProductDetails() {
                 <DivDescription>
                         <h1>Descrição</h1>
                         <h2>
-                            {text}
+                            {item.description}
                         </h2>
                 </DivDescription>
-                <DivRating>
+                {/* <DivRating>
                     <h1>Relevância</h1>
                     <h2>gifzinho de avaliações aqui</h2>
-                </DivRating>
+                </DivRating> */}
             </DivRatingAndDescription>
             
             <DivRecommendations>
-                {arr.map((e)=>{
+                {allProducts.map((element, key)=>{
                     return(
-                    <DivItemsRecommendations onClick={()=>{navigate("/details/1");}}>
-                        <img src={linkImg}></img>
+                    <DivItemsRecommendations key={key} onClick={()=>{otherProduct(element.id)}}>
+                        <img src={element.image}></img>
                         <div>
-                            <h5>fone sony playstation galaxy s2 4xrl8</h5>
-                            <h6> R$ 299,90 </h6>
+                            <h5>{element.title}</h5>
+                            <h6> R$ {Price(String(element.price))}</h6>
                         </div>
                     </DivItemsRecommendations>
                     )
@@ -112,6 +97,7 @@ const DivItemsRecommendations =styled.div`
     align-items: center;
     padding: 10px;
     margin-right: 30px;
+    cursor:pointer;
     img{
         width: 230px;
         height: 150px;
@@ -178,7 +164,6 @@ const DivProductFeatures = styled.div`
     div div{
         width:15px;
         height:15px;
-        background:blue;
         margin: 10px;
     }
     h2{

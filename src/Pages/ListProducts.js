@@ -1,99 +1,85 @@
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom"
-import Top from "../../Components/Top";
-import Bottom from "../../Components/Bottom";
-import { BsStarFill, BsStar, BsCart3, BsStarHalf } from 'react-icons/bs';
-import { getAllProducts, getCartUser, getRatingById, postCartUser } from "../../Servives/api";
-import { useEffect, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom"
+import Top from "../Components/Top";
+import Bottom from "../Components/Bottom";
+import { BsCart3} from 'react-icons/bs';
+import { getAllProducts, getCartUser, getCategories, getProductsByCategory, postCartUser } from "../Servives/api";
+import { useContext, useEffect, useState } from "react";
+import { Price } from "../Servives/functions";
+import { AuthContext } from "../Servives/Auth";
+import { Alert } from "../Components/Alert";
 
-const categoria=["eletronico", "eletro-domesticos", "decoração", "moda", "moveis", "papelaria" ];
 
 export default function Products(){
     const navigate=useNavigate();
     const [allProducts, setAllProducts] = useState ([]);
-    const [cart, setCart] = useState([]);
-    
-    const [ratings, setRatings] = useState ([]);
-    const [rating, setRating] = useState (0);
-    const BsStarFillIcon = <BsStarFill style={star}/>
-    const BsStarIcon = <BsStar style={star}/>
-    const BsStarHalfIcon = <BsStarHalf style={star}/>
+    const [categories, setCategories] = useState([]);
+    const { clickSearch, setClickSearch } = useContext(AuthContext);
+    const { clickSearchsRender, setClickSearchsRender} = useContext(AuthContext);
+    const {clickAlert, setClickAlert} = useContext(AuthContext);
+    const {messageAlert, setMessageAlert} = useContext(AuthContext);
 
     useEffect(()=> {
         getAllProducts().then((res)=>{
-            // console.log(e.data);
             setAllProducts(res.data);
         }).catch((error)=>{
-            console.log(error); // tratar o erro 
-        });
-
-        getCartUser().then((res)=>{
-            // console.log(res.data);
-            setCart(res.data);
+            console.log(error);
+        });       
+        getCategories().then((res)=>{
+            setCategories(res.data);
         }).catch((error)=>{
-            console.log("deu ruim", error);
+            console.log(error);
         });
-
     }, []);
-
-    function Price (price) {
-        const arrayPrice = price.split("");
-        arrayPrice.splice([price.length - 2], 0 , ".");
-        const newPrice = arrayPrice.join("")
-        return newPrice;
-    };
+    useEffect(()=>{
+        if(clickSearchsRender){
+            setAllProducts(JSON.parse(localStorage.getItem("searchs")));
+            setClickSearchsRender(false);
+        }
+    },[clickSearchsRender]);
 
     function insertCartUser(producId) {
         postCartUser(producId).then((res)=>{
-                console.log(res);
+                window.location.reload();
             }).catch((error)=> {
                 console.log(error);
+                setMessageAlert("Please login");
+                setClickAlert(true);
             });
     };
-    console.log(cart);
-    
-    function Rating (productId) {
-        const arrayRatings = [];
-        // console.log("primeirooo", ratings)
-        // getRatingById(productId).then((e) => {
-        //     if(e.data.rating) {
-        //         setRating(e.data.rating);
-        //     }
-        //     for(let i=0; i<5; i++){
-        //         arrayRatings.push(BsStarFillIcon);
-        //     }
-        // }).catch((e) => {
-        //     console.log("Deu Ruimmmmm");
-        // });
-        //     if(arrayRatings.length != 0){
-        //         setRatings(arrayRatings);
-        //     };
-        return ratings
+    function detailsProduct(producId) {
+        localStorage.setItem("productId",producId);
+        navigate("/details");
     };
-    // function addCart(productId) {
-    // }
- 
-    return(<DivList>
+    function clickCategory(categoryId){
+        getProductsByCategory(categoryId).then((res)=>{
+            setAllProducts(res.data);
+        }).catch((error)=>{
+            console.log(error);
+        });
+    };
+    function closeSearch(){
+        setClickSearch(true);
+    };
+
+    return(<DivList onClick={()=>{closeSearch()}}>
+        <Alert/>
            <Top/>
-            <DivCategory> 
-                {categoria.map((e)=>(
-                  <div className="category"><h1>{e}</h1></div> 
-                ))}    
+            <DivCategory className="scroll"> 
+                {categories.map((element, key)=>{
+                        return <div key={key} onClick={()=>{clickCategory(element.id)}} className="category"><h1>{element.category}</h1></div>
+                })}
+            
             </DivCategory>
 
         <DivMidList>
-            {allProducts.map((product, i)=>(
-                <DivBox  key={i}>
-                    <img onClick={()=>{navigate('/details')}} src={product.image}/>
+            {allProducts.map((product, key)=>(
+                <DivBox  key={key}>
+                    <img onClick={()=>{detailsProduct(product.id);}} src={product.image}/>
                     <DivInformations>
                         <h2>{product.title}</h2>
                         <DivValue>
-                            <h3>R$ {Price(product.price)}</h3>
-                            
-                            <div>
-                                {Rating(product.id)}
-                            </div>
-                        
+                            <h3>R$ {Price(String(product.price))}</h3>  
                         </DivValue>
                         <DivButton onClick={()=>{
                                 insertCartUser(product.id);
@@ -109,6 +95,7 @@ export default function Products(){
         <Bottom/>
     </DivList>);
 };
+
 const star= {
     color: "#e8d833",
     fontSize: "20px",
@@ -119,23 +106,38 @@ const cartStyle= {
     fontSize: "25px",
     marginLeft:"10px",
 };
-const DivList=styled.div``
+const DivList=styled.div`
+    .scroll::-webkit-scrollbar-track {
+        background: none;
+      }
+      .scroll::-webkit-scrollbar {
+        width: 10px; 
+        height: 5px;             
+      }
+      .scroll::-webkit-scrollbar-thumb {
+        background-color: orange;    
+        border-radius: 20px;       
+      }
+      
+`
 const DivCategory=styled.div`
     position: fixed;
     top: 100px;
     width: 100%;
-    height: 50px;
+    height: 55px;
     background: #bf0a0d;
     display:flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 3%;
     box-shadow: 0px 5px 5px gray;
+    overflow-x: scroll;
+    overflow-y: hidden;
+
     // z-index: 1;
     .category{
-        width:  200px;
-        display: flex;
-        justify-content: center;
+        width: 300px;
+        margin: 0 50px;
         cursor: pointer;
     }
     .category h1{
@@ -143,6 +145,9 @@ const DivCategory=styled.div`
         font-family: 'Righteous', cursive;
         color: white;
     }
+    .category::-webkit-scrollbar-track {
+        background: orange;
+      }
     .category h1:hover{
         color: #f8a523;
     }
@@ -166,7 +171,8 @@ const DivBox=styled.div`
             background: pink;
             width: 100%;
             height: 50%;
-            border-radius: 20px 0 20px 0; 
+            border-radius: 20px 0 20px 0;
+            cursor: pointer;
         }
         &:hover{
             background: #e2e2e2;
